@@ -102,7 +102,6 @@ def DAGs_generate(mode = 'default', n = 10, max_out = 2,alpha = 1,beta = 1.0):
         if od ==0:
             edges.append((node+1,'Exit'))
             out_degree[node]+=1
-
     #############################################plot###################################################
     return edges,into_degree,out_degree,position
 
