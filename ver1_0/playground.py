@@ -1,7 +1,7 @@
-from DAGs_Generator import DAGs_generate
-from DAGs_Generator import plot_DAG
+import DAGs_Generator as DG
 
-edges,in_degree,out_degree,position = DAGs_generate('default')
+edges,in_degree,out_degree,position = DG.DAGs_generate('default')
 # edges,in_degree,out_degree,position = DAGs_generate('random')
-plot_DAG(edges,position)
+DG.plot_DAG(edges,position)
+print(DG.admatrix(edges,10))
  

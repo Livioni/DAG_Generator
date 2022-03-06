@@ -1,7 +1,7 @@
 import random,math,argparse
 import numpy as np
 from numpy.random.mtrand import sample
-from matplotlib import pyplot as plt
+from matplotlib import patches, pyplot as plt
 import networkx as nx
 
 parser = argparse.ArgumentParser()
@@ -112,4 +112,18 @@ def plot_DAG(edges,postion):
     nx.draw_networkx(g1, arrows=True, pos=postion)
     plt.savefig("DAG.png", format="PNG")
     return plt.clf
+
+def admatrix(edges,n):
+    '''
+    返回一个图的邻接矩阵
+    :param edges: 生成图边信息
+    :param n: 节点个数，不包括'Start'和 'Exit'
+    :return adjacency_matrix: 图的邻接矩阵      
+    '''
+    graph = nx.DiGraph(edges)
+    ndlist = [i for i in range(1,n)]
+    adjacency_matrix = nx.to_scipy_sparse_matrix(G = graph,nodelist = ndlist)
+    return adjacency_matrix.toarray()
+
+
 
