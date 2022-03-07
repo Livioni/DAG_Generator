@@ -3,6 +3,7 @@ import numpy as np
 from numpy.random.mtrand import sample
 from matplotlib import patches, pyplot as plt
 import networkx as nx
+from scipy import sparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='default', type=str)#parameters setting
@@ -29,6 +30,7 @@ def DAGs_generate(mode = 'default', n = 10, max_out = 2,alpha = 1,beta = 1.0):
         args.max_out = max_out
         args.alpha = alpha
         args.beta = beta
+        args.prob = 1
 
     length = math.floor(math.sqrt(args.n)/args.alpha)
     mean_value = args.n/length
@@ -113,17 +115,59 @@ def plot_DAG(edges,postion):
     plt.savefig("DAG.png", format="PNG")
     return plt.clf
 
-def admatrix(edges,n):
-    '''
-    返回一个图的邻接矩阵
-    :param edges: 生成图边信息
-    :param n: 节点个数，不包括'Start'和 'Exit'
-    :return adjacency_matrix: 图的邻接矩阵      
-    '''
-    graph = nx.DiGraph(edges)
-    ndlist = [i for i in range(1,n)]
-    adjacency_matrix = nx.to_scipy_sparse_matrix(G = graph,nodelist = ndlist)
-    return adjacency_matrix.toarray()
+
+##### for my graduation project
+
+# def admatrix(edges,n):
+#     '''
+#     返回一个图的邻接矩阵
+#     :param edges: 生成图边信息
+#     :param n: 节点个数，不包括'Start'和 'Exit'
+#     :return adjacency_matrix: 图的邻接矩阵     稀疏形式  
+#     '''
+#     graph = nx.DiGraph(edges)
+#     ndlist = [i for i in range(1,n)]
+#     adjacency_matrix = nx.to_scipy_sparse_matrix(G = graph,nodelist = ndlist,dtype = np.float32)
+#     return adjacency_matrix
 
 
+# def workflows_generator(mode='default', n=10, max_out=2, alpha=1, beta=1.0, t_unit=10, resource_unit=100):
+#     '''
+#     随机生成一个DAG任务并随机分配它的持续时间和（CPU，Memory）的需求
+#     :param mode: DAG按默认参数生成
+#     :param n: DAG中任务数
+#     :para max_out: DAG节点最大子节点数
+#     :return: edges      DAG边信息
+#              duration   DAG节点持续时间
+#              demand     DAG节点资源需求数量
+#     '''
+#     t = t_unit  # s   time unit
+#     r = resource_unit  # resource unit
+#     edges, in_degree, out_degree, position = DAGs_generate(mode, n, max_out, alpha, beta)
+#     plot_DAG(edges,position)
+#     duration = []
+#     demand = []
+#     # 初始化持续时间
+#     for i in range(len(in_degree)):
+#         if random.random() < args.prob:
+#             # duration.append(random.uniform(t,3*t))
+#             duration.append(random.sample(range(0, 3 * t), 1)[0])
+#         else:
+#             # duration.append(random.uniform(5*t,10*t))
+#             duration.append(random.sample(range(5 * t, 10 * t), 1)[0])
+#     # 初始化资源需求
+#     for i in range(len(in_degree)):
+#         if random.random() < 0.5:
+#             demand.append((random.uniform(0.25 * r, 0.5 * r), random.uniform(0.05 * r, 0.01 * r)))
+#         else:
+#             demand.append((random.uniform(0.05 * r, 0.01 * r), random.uniform(0.25 * r, 0.5 * r)))
+
+#     return edges, duration, demand, position
+
+# def convert_to_feature(duration,demand):
+#     feature = np.array([],dtype=np.float32)
+#     for line in range(len(duration)):
+#         feature = np.append(feature,np.array([duration[line],demand[line][0],demand[line][1]],dtype=np.float32))
+#     feature = sparse.csr_matrix(feature)
+#     return feature
 
