@@ -132,6 +132,20 @@ def search_for_successors(node, edges):
         pred = map[node]
         return pred
 
+def search_for_all_successors(node, edges):
+    node = [node]
+    for ele in node:
+        succ = search_for_successors(ele,edges)
+        if(len(succ)==1 and succ[0]=='Exit'):
+            break
+        for item in succ:
+            if item in node:
+                continue
+            else:
+                node.append(item)
+    return node
+
+
 def search_for_predecessor(node, edges):
     '''
     寻找前继节点
@@ -149,6 +163,8 @@ def search_for_predecessor(node, edges):
     succ = map[node]
     return succ
 ##### for my graduation project
+
+
 
 
 def workflows_generator(mode='default', n=10, max_out=2, alpha=1, beta=1.0, t_unit=10, resource_unit=100):

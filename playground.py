@@ -6,6 +6,8 @@ import networkx as nx
 from scipy import sparse
 import scipy as sp
 import torch
+import torch.nn.functional as F
+import torch.nn as nn
 
 def convert_to_feature(duration,demand):
     feature = np.array([],dtype=np.float32)
@@ -47,13 +49,55 @@ def gcn_embedding(edges,duration,demand):
     return features,adj
 
 
-gcn = models.GCN(3,16,3)
-gcn.load_state_dict(torch.load('GCN_initialtion/GCN_0.pth', map_location=lambda storage, loc: storage))
+class DecimaGNN(nn.Module):  # 策略网络
+    def __init__(self, input_size, output_size):
+        super(DecimaGNN, self).__init__()
+        self.input_size = input_size
+        self.output_size = output_size
+        self.linear1 = nn.Linear(self.input_size, 16)
+        self.linear2 = nn.Linear(16, self.output_size)
+
+    def forward(self, input_feature):
+        output = self.linear1(input_feature)
+        output = F.leaky_relu(self.linear2(output))
+        return output  # 输出动作概率分布
+
+
+NonLinearNw1 = DecimaGNN(3,3)
+NonLinearNw2 = DecimaGNN(3,3)
+NonLinearNw3 = DecimaGNN(3,3)
+
+NonLinearNw1.load_state_dict(torch.load('GCN_inialization/NonLinearNw1.pth', map_location=lambda storage, loc: storage))
+NonLinearNw2.load_state_dict(torch.load('GCN_inialization/NonLinearNw2.pth', map_location=lambda storage, loc: storage))
+NonLinearNw3.load_state_dict(torch.load('GCN_inialization/NonLinearNw3.pth', map_location=lambda storage, loc: storage))
 
 edges = [(1, 6), (2, 6), (3, 5), (4, 5), (5, 10), (6, 8), (6, 7), ('Start', 1), ('Start', 2), ('Start', 3), ('Start', 4), ('Start', 9), (7, 'Exit'), (8, 'Exit'), (9, 'Exit'), (10, 'Exit')]
 position = {'Start': (0, 10.5), 'Exit': (12, 10.5), 1: (3, 1), 2: (3, 6), 3: (3, 11), 4: (3, 16), 5: (6, 1), 6: (6, 6), 7: (9, 1), 8: (9, 6), 9: (9, 11), 10: (9, 16)}
 duration = [21, 28, 29, 15, 2, 22, 19, 21, 21, 18]
 demand = [(26.920, 3.252), (2.808, 49.927), (28.557, 3.507), (4.845, 37.866), (1.098, 27.089), (46.571, 1.378), (2.068, 35.691), (3.745, 43.280), (1.50, 45.471), (1.799, 35.478)]
-DG.plot_DAG(edges,position)
+
+raw_embeddings = [] #原始节点feature
+embeddings =  {}  #编码后的feature字典  job_id : embedding
+
+cpu_demands = [demand[i][0] for i in range(len(demand))]
+memory_demands = [demand[i][1] for i in range(len(demand))]
+for exetime,cpu_demand,memory_demand in zip(duration,cpu_demands,memory_demands):
+    raw_embeddings.append([exetime,cpu_demand,memory_demand])
+raw_embeddings = np.array(raw_embeddings,dtype=np.float32)
+raw_embeddings = torch.from_numpy(raw_embeddings)
+embeddings1 = NonLinearNw1(raw_embeddings) #第一层初始编码信息
+
+pred0 = DG.search_for_predecessor('Exit',edges[:])
+for ele in pred0:
+    embeddings[ele] = embeddings1[ele-1].data
+
+succ = DG.search_for_all_successors(1,edges[:])
+print(succ)
+
+
+
+
+    
+
 
 
