@@ -67,9 +67,9 @@ NonLinearNw1 = DecimaGNN(3,3)
 NonLinearNw2 = DecimaGNN(3,3)
 NonLinearNw3 = DecimaGNN(3,3)
 
-NonLinearNw1.load_state_dict(torch.load('GCN_inialization/NonLinearNw1.pth', map_location=lambda storage, loc: storage))
-NonLinearNw2.load_state_dict(torch.load('GCN_inialization/NonLinearNw2.pth', map_location=lambda storage, loc: storage))
-NonLinearNw3.load_state_dict(torch.load('GCN_inialization/NonLinearNw3.pth', map_location=lambda storage, loc: storage))
+NonLinearNw1.load_state_dict(torch.load('GCN_initialization/NonLinearNw1.pth', map_location=lambda storage, loc: storage))
+NonLinearNw2.load_state_dict(torch.load('GCN_initialization/NonLinearNw2.pth', map_location=lambda storage, loc: storage))
+NonLinearNw3.load_state_dict(torch.load('GCN_initialization/NonLinearNw3.pth', map_location=lambda storage, loc: storage))
 
 # edges = [(1, 6), (2, 6), (3, 5), (4, 5), (5, 10), (6, 8), (6, 7), ('Start', 1), ('Start', 2), ('Start', 3), ('Start', 4), ('Start', 9), (7, 'Exit'), (8, 'Exit'), (9, 'Exit'), (10, 'Exit')]
 # position = {'Start': (0, 10.5), 'Exit': (12, 10.5), 1: (3, 1), 2: (3, 6), 3: (3, 11), 4: (3, 16), 5: (6, 1), 6: (6, 6), 7: (9, 1), 8: (9, 6), 9: (9, 11), 10: (9, 16)}
