@@ -133,6 +133,7 @@ def search_for_successors(node, edges):
         return pred
 
 def search_for_all_successors(node, edges):
+    save = node
     node = [node]
     for ele in node:
         succ = search_for_successors(ele,edges)
@@ -143,6 +144,7 @@ def search_for_all_successors(node, edges):
                 continue
             else:
                 node.append(item)
+    node.remove(save)
     return node
 
 
@@ -163,8 +165,6 @@ def search_for_predecessor(node, edges):
     succ = map[node]
     return succ
 ##### for my graduation project
-
-
 
 
 def workflows_generator(mode='default', n=10, max_out=2, alpha=1, beta=1.0, t_unit=10, resource_unit=100):

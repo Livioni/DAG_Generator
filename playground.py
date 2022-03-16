@@ -71,28 +71,58 @@ NonLinearNw1.load_state_dict(torch.load('GCN_inialization/NonLinearNw1.pth', map
 NonLinearNw2.load_state_dict(torch.load('GCN_inialization/NonLinearNw2.pth', map_location=lambda storage, loc: storage))
 NonLinearNw3.load_state_dict(torch.load('GCN_inialization/NonLinearNw3.pth', map_location=lambda storage, loc: storage))
 
-edges = [(1, 6), (2, 6), (3, 5), (4, 5), (5, 10), (6, 8), (6, 7), ('Start', 1), ('Start', 2), ('Start', 3), ('Start', 4), ('Start', 9), (7, 'Exit'), (8, 'Exit'), (9, 'Exit'), (10, 'Exit')]
-position = {'Start': (0, 10.5), 'Exit': (12, 10.5), 1: (3, 1), 2: (3, 6), 3: (3, 11), 4: (3, 16), 5: (6, 1), 6: (6, 6), 7: (9, 1), 8: (9, 6), 9: (9, 11), 10: (9, 16)}
-duration = [21, 28, 29, 15, 2, 22, 19, 21, 21, 18]
-demand = [(26.920, 3.252), (2.808, 49.927), (28.557, 3.507), (4.845, 37.866), (1.098, 27.089), (46.571, 1.378), (2.068, 35.691), (3.745, 43.280), (1.50, 45.471), (1.799, 35.478)]
+# edges = [(1, 6), (2, 6), (3, 5), (4, 5), (5, 10), (6, 8), (6, 7), ('Start', 1), ('Start', 2), ('Start', 3), ('Start', 4), ('Start', 9), (7, 'Exit'), (8, 'Exit'), (9, 'Exit'), (10, 'Exit')]
+# position = {'Start': (0, 10.5), 'Exit': (12, 10.5), 1: (3, 1), 2: (3, 6), 3: (3, 11), 4: (3, 16), 5: (6, 1), 6: (6, 6), 7: (9, 1), 8: (9, 6), 9: (9, 11), 10: (9, 16)}
+# duration = [21, 28, 29, 15, 2, 22, 19, 21, 21, 18]
+# demand = [(26.920, 3.252), (2.808, 49.927), (28.557, 3.507), (4.845, 37.866), (1.098, 27.089), (46.571, 1.378), (2.068, 35.691), (3.745, 43.280), (1.50, 45.471), (1.799, 35.478)]
 
-raw_embeddings = [] #原始节点feature
-embeddings =  {}  #编码后的feature字典  job_id : embedding
+edges, duration, demand, _ = DG.workflows_generator('default')
 
-cpu_demands = [demand[i][0] for i in range(len(demand))]
-memory_demands = [demand[i][1] for i in range(len(demand))]
-for exetime,cpu_demand,memory_demand in zip(duration,cpu_demands,memory_demands):
-    raw_embeddings.append([exetime,cpu_demand,memory_demand])
-raw_embeddings = np.array(raw_embeddings,dtype=np.float32)
-raw_embeddings = torch.from_numpy(raw_embeddings)
-embeddings1 = NonLinearNw1(raw_embeddings) #第一层初始编码信息
+def Decima_encoder(edges,duration,demand):
+    '''
+    使用Decima编码器编码DAG图信息
+    :param duration: 工作流信息
+    :param edges: DAG边信息
+    :param demand: 工作流信息
+    :return: embeddings dag图的节点编码信息，以字典形式储存。
+    '''
+    raw_embeddings = [] #原始节点feature
+    embeddings =  {}  #编码后的feature字典  job_id : embedding
 
-pred0 = DG.search_for_predecessor('Exit',edges[:])
-for ele in pred0:
-    embeddings[ele] = embeddings1[ele-1].data
+    cpu_demands = [demand[i][0] for i in range(len(demand))]
+    memory_demands = [demand[i][1] for i in range(len(demand))]
+    for exetime,cpu_demand,memory_demand in zip(duration,cpu_demands,memory_demands):
+        raw_embeddings.append([exetime,cpu_demand,memory_demand])
+    raw_embeddings = np.array(raw_embeddings,dtype=np.float32)
+    raw_embeddings = torch.from_numpy(raw_embeddings)
+    embeddings1 = NonLinearNw1(raw_embeddings) #第一层初始编码信息
 
-succ = DG.search_for_all_successors(1,edges[:])
-print(succ)
+
+    pred0 = DG.search_for_predecessor('Exit',edges[:])
+    for ele in pred0:
+        embeddings[ele] = embeddings1[ele-1].data
+
+    while(len(embeddings.keys())<len(duration)):
+        box = []
+        for ele in pred0:
+            pred = DG.search_for_predecessor(ele,edges[:])
+            for i in pred:
+                if i in embeddings.keys():
+                    continue
+                if i == 'Start':
+                    continue
+                succ = DG.search_for_all_successors(i,edges[:])
+                g = torch.tensor([0,0,0],dtype=torch.float32)
+                for j in succ:
+                    g += NonLinearNw2(embeddings[j])
+                embeddings[i] = NonLinearNw3(g) + embeddings1[i]
+                box.append(i)
+        pred0 = box
+    return embeddings
+    
+informa = Decima_encoder(edges,duration,demand).keys()
+print(informa)
+
 
 
 
