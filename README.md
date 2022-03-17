@@ -2,7 +2,14 @@
 
  [Random Directed Acyclic Graph Generator](https://github.com/Livioni/DAG_Generator)
 
-#### verison1.0
+## Installation
+It requires the following packages:
+
+- Python 3.9.7
+- networkx 2.6.3
+
+## Instructions
+生成DAG的代码在DAGs_Generator.py 文件中，其余文件仅供本人毕设参考使用。
 
 ##### 简介
 
