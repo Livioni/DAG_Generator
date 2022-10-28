@@ -202,3 +202,5 @@ def workflows_generator(mode='default', n=10, max_out=2, alpha=1, beta=1.0, t_un
     return edges, duration, demand, position
 
 
+edges, duration, demand, position = workflows_generator()
+print(edges)
